@@ -7,7 +7,7 @@ export const authRouter = createTRPCRouter({
     .input(z.object({
       email: z.string().email(),
       password: z.string().min(6),
-      name: z.string().min(1),
+      name: z.string().optional().default(""),
     }))
     .mutation(async ({ input }) => {
       const { data, error } = await supabase.auth.admin.createUser({

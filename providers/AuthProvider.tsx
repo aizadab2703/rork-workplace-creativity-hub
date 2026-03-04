@@ -48,8 +48,20 @@ export const [AuthProvider, useAuth] = createContextHook(() => {
 
   const signUpMutation = useMutation({
     mutationFn: async ({ email, password }: { email: string; password: string }) => {
-      console.log('[Auth] Signing up:', email);
-      const { data, error } = await supabaseClient.auth.signUp({
+      console.log('[Auth] Signing up via backend (auto-confirm):', email);
+      const baseUrl = process.env.EXPO_PUBLIC_RORK_API_BASE_URL || '';
+      const res = await fetch(`${baseUrl}/api/trpc/auth.signUp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ json: { email, password } }),
+      });
+      const json = await res.json();
+      if (json?.error) {
+        const msg = json.error?.json?.message || json.error?.message || 'Sign up failed';
+        throw new Error(msg);
+      }
+      console.log('[Auth] Backend signup success, now signing in...');
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
         email,
         password,
       });
