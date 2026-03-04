@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react-native';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Sparkles } from 'lucide-react-native';
 import { useAuth } from '@/providers/AuthProvider';
 import Colors from '@/constants/colors';
 import { triggerHaptic } from '@/utils/helpers';
@@ -32,56 +32,65 @@ export default function OnboardingScreen() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const jarScale = useRef(new Animated.Value(0.7)).current;
-  const jarY = useRef(new Animated.Value(20)).current;
+  const jarScale = useRef(new Animated.Value(0.6)).current;
+  const jarY = useRef(new Animated.Value(25)).current;
   const formFade = useRef(new Animated.Value(0)).current;
-  const formSlide = useRef(new Animated.Value(30)).current;
+  const formSlide = useRef(new Animated.Value(35)).current;
   const taglineFade = useRef(new Animated.Value(0)).current;
+  const taglineSlide = useRef(new Animated.Value(12)).current;
 
   const isLoading = isSigningIn || isSigningUp;
 
   useEffect(() => {
     Animated.sequence([
-      Animated.delay(300),
+      Animated.delay(200),
       Animated.parallel([
         Animated.spring(jarScale, {
           toValue: 1,
-          tension: 40,
+          tension: 35,
           friction: 8,
           useNativeDriver: true,
         }),
         Animated.timing(jarY, {
           toValue: 0,
-          duration: 800,
+          duration: 900,
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 800,
+          duration: 900,
           useNativeDriver: true,
         }),
       ]),
-      Animated.timing(taglineFade, {
-        toValue: 1,
-        duration: 500,
-        useNativeDriver: true,
-      }),
+      Animated.parallel([
+        Animated.timing(taglineFade, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(taglineSlide, {
+          toValue: 0,
+          duration: 500,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ]),
       Animated.parallel([
         Animated.timing(formFade, {
           toValue: 1,
-          duration: 400,
+          duration: 450,
           useNativeDriver: true,
         }),
         Animated.timing(formSlide, {
           toValue: 0,
-          duration: 400,
+          duration: 450,
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
       ]),
     ]).start();
-  }, [fadeAnim, jarScale, jarY, formFade, formSlide, taglineFade]);
+  }, [fadeAnim, jarScale, jarY, formFade, formSlide, taglineFade, taglineSlide]);
 
   const handleSubmit = async () => {
     if (!email.trim() || !password.trim()) {
@@ -122,8 +131,8 @@ export default function OnboardingScreen() {
 
   return (
     <LinearGradient
-      colors={[Colors.cream, Colors.sand, Colors.parchment]}
-      locations={[0, 0.5, 1]}
+      colors={[Colors.cream, Colors.sand, Colors.parchment, Colors.sandDark]}
+      locations={[0, 0.35, 0.7, 1]}
       style={styles.container}
     >
       <KeyboardAvoidingView
@@ -144,20 +153,28 @@ export default function OnboardingScreen() {
               },
             ]}
           >
-            <JarVisualization fillPercent={35} size={160} />
+            <JarVisualization fillPercent={35} size={150} />
           </Animated.View>
 
           <Animated.View style={[styles.titleSection, { opacity: fadeAnim }]}>
             <Text style={styles.appName}>GratitudeJar</Text>
           </Animated.View>
 
-          <Animated.View style={[styles.taglineSection, { opacity: taglineFade }]}>
+          <Animated.View
+            style={[
+              styles.taglineSection,
+              {
+                opacity: taglineFade,
+                transform: [{ translateY: taglineSlide }],
+              },
+            ]}
+          >
             <Text style={styles.subtitle}>
               Capture the good things.{'\n'}Open them when the time comes.
             </Text>
             <View style={styles.decorDivider}>
               <View style={styles.dividerLine} />
-              <View style={styles.dividerDot} />
+              <Sparkles color={Colors.honey} size={10} />
               <View style={styles.dividerLine} />
             </View>
           </Animated.View>
@@ -177,7 +194,7 @@ export default function OnboardingScreen() {
 
             <View style={styles.inputContainer}>
               <View style={styles.inputIcon}>
-                <Mail color={Colors.textMuted} size={18} />
+                <Mail color={Colors.textLight} size={17} />
               </View>
               <TextInput
                 style={styles.input}
@@ -194,7 +211,7 @@ export default function OnboardingScreen() {
 
             <View style={styles.inputContainer}>
               <View style={styles.inputIcon}>
-                <Lock color={Colors.textMuted} size={18} />
+                <Lock color={Colors.textLight} size={17} />
               </View>
               <TextInput
                 style={styles.input}
@@ -213,9 +230,9 @@ export default function OnboardingScreen() {
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
                 {showPassword ? (
-                  <EyeOff color={Colors.textLight} size={18} />
+                  <EyeOff color={Colors.textLight} size={17} />
                 ) : (
-                  <Eye color={Colors.textLight} size={18} />
+                  <Eye color={Colors.textLight} size={17} />
                 )}
               </TouchableOpacity>
             </View>
@@ -227,16 +244,23 @@ export default function OnboardingScreen() {
               disabled={isLoading}
               testID="submit-button"
             >
-              {isLoading ? (
-                <ActivityIndicator color={Colors.white} size="small" />
-              ) : (
-                <>
-                  <Text style={styles.submitButtonText}>
-                    {mode === 'sign_in' ? 'Sign In' : 'Sign Up'}
-                  </Text>
-                  <ArrowRight color={Colors.white} size={18} />
-                </>
-              )}
+              <LinearGradient
+                colors={isLoading ? [Colors.textLight, Colors.textLight] : [Colors.terracotta, Colors.terracottaDark]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.submitGradient}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color={Colors.white} size="small" />
+                ) : (
+                  <>
+                    <Text style={styles.submitButtonText}>
+                      {mode === 'sign_in' ? 'Sign In' : 'Sign Up'}
+                    </Text>
+                    <ArrowRight color={Colors.white} size={18} />
+                  </>
+                )}
+              </LinearGradient>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -275,26 +299,26 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 32,
+    paddingHorizontal: 28,
     paddingVertical: 60,
   },
   jarSection: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   titleSection: {
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   appName: {
-    fontSize: 36,
+    fontSize: 34,
     fontWeight: '700' as const,
     color: Colors.textPrimary,
-    letterSpacing: -0.5,
+    letterSpacing: -0.6,
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
   taglineSection: {
     alignItems: 'center',
-    marginBottom: 36,
+    marginBottom: 34,
   },
   subtitle: {
     fontSize: 15,
@@ -306,43 +330,41 @@ const styles = StyleSheet.create({
   decorDivider: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 18,
-    gap: 8,
+    marginTop: 16,
+    gap: 10,
   },
   dividerLine: {
-    width: 28,
+    width: 32,
     height: 1,
     backgroundColor: Colors.honey,
-    opacity: 0.3,
-  },
-  dividerDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: Colors.honey,
-    opacity: 0.4,
+    opacity: 0.25,
   },
   formSection: {
     width: '100%',
-    gap: 14,
+    gap: 12,
   },
   formTitle: {
-    fontSize: 20,
+    fontSize: 21,
     fontWeight: '600' as const,
     color: Colors.textPrimary,
     textAlign: 'center',
-    marginBottom: 4,
+    marginBottom: 6,
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.white,
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.06)',
+    borderColor: 'rgba(0, 0, 0, 0.05)',
     paddingHorizontal: 14,
-    height: 52,
+    height: 54,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 8,
+    elevation: 1,
   },
   inputIcon: {
     marginRight: 10,
@@ -357,17 +379,25 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   submitButton: {
-    backgroundColor: Colors.terracotta,
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginTop: 6,
+    shadowColor: Colors.terracotta,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 14,
+    elevation: 6,
+  },
+  submitGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
-    borderRadius: 14,
+    paddingVertical: 17,
     gap: 8,
-    marginTop: 4,
   },
   submitButtonDisabled: {
     opacity: 0.7,
+    shadowOpacity: 0,
   },
   submitButtonText: {
     color: Colors.white,
@@ -376,7 +406,7 @@ const styles = StyleSheet.create({
   },
   switchButton: {
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 10,
   },
   switchText: {
     fontSize: 14,
@@ -390,6 +420,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.textLight,
     textAlign: 'center',
-    marginTop: 4,
+    marginTop: 2,
+    lineHeight: 18,
   },
 });

@@ -9,7 +9,7 @@ import {
   Switch,
 } from 'react-native';
 import { Stack, router } from 'expo-router';
-import { User, Bell, LogOut, Shield, Heart, Sparkles } from 'lucide-react-native';
+import { User, Bell, LogOut, Shield, Heart, Sparkles, ChevronRight } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useGratitude } from '@/providers/GratitudeProvider';
 import { triggerHaptic } from '@/utils/helpers';
@@ -46,20 +46,22 @@ export default function SettingsScreen() {
             fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
             fontWeight: '700',
             color: Colors.textPrimary,
+            fontSize: 18,
           },
           headerStyle: {
             backgroundColor: Colors.cream,
           },
+          headerShadowVisible: false,
         }}
       />
-      <View style={[styles.container, { backgroundColor: Colors.cream }]}>
+      <View style={styles.container}>
         <View style={styles.content}>
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Account</Text>
             <View style={styles.card}>
               <View style={styles.row}>
                 <View style={styles.rowLeft}>
-                  <View style={[styles.iconBox, { backgroundColor: 'rgba(184, 115, 51, 0.06)' }]}>
+                  <View style={[styles.iconBox, { backgroundColor: 'rgba(196, 113, 74, 0.06)' }]}>
                     <User color={Colors.terracotta} size={16} />
                   </View>
                   <View>
@@ -67,11 +69,12 @@ export default function SettingsScreen() {
                     <Text style={styles.rowSubtext}>{user?.email || ''}</Text>
                   </View>
                 </View>
+                <ChevronRight color={Colors.textLight} size={16} />
               </View>
               <View style={styles.divider} />
               <View style={styles.row}>
                 <View style={styles.rowLeft}>
-                  <View style={[styles.iconBox, { backgroundColor: 'rgba(232, 180, 80, 0.08)' }]}>
+                  <View style={[styles.iconBox, { backgroundColor: 'rgba(212, 160, 74, 0.08)' }]}>
                     <Shield color={Colors.honey} size={16} />
                   </View>
                   <View>
@@ -88,7 +91,7 @@ export default function SettingsScreen() {
             <View style={styles.card}>
               <View style={styles.row}>
                 <View style={styles.rowLeft}>
-                  <View style={[styles.iconBox, { backgroundColor: 'rgba(232, 180, 80, 0.08)' }]}>
+                  <View style={[styles.iconBox, { backgroundColor: 'rgba(212, 160, 74, 0.08)' }]}>
                     <Bell color={Colors.honey} size={16} />
                   </View>
                   <Text style={styles.rowLabel}>Notifications</Text>
@@ -107,12 +110,16 @@ export default function SettingsScreen() {
             <Text style={styles.sectionTitle}>Your Journey</Text>
             <View style={styles.statsRow}>
               <View style={styles.statCard}>
-                <Sparkles color={Colors.honey} size={17} />
+                <View style={styles.statIconWrap}>
+                  <Sparkles color={Colors.honey} size={18} />
+                </View>
                 <Text style={styles.statNumber}>{jars.length}</Text>
                 <Text style={styles.statLabel}>Jars</Text>
               </View>
               <View style={styles.statCard}>
-                <Heart color={Colors.roseGold} size={17} />
+                <View style={styles.statIconWrap}>
+                  <Heart color={Colors.roseGold} size={18} />
+                </View>
                 <Text style={styles.statNumber}>{notes.length}</Text>
                 <Text style={styles.statLabel}>Notes</Text>
               </View>
@@ -125,12 +132,12 @@ export default function SettingsScreen() {
             activeOpacity={0.7}
             testID="sign-out-button"
           >
-            <LogOut color={Colors.danger} size={16} />
+            <LogOut color={Colors.danger} size={15} />
             <Text style={styles.signOutText}>Sign Out</Text>
           </TouchableOpacity>
 
           <View style={styles.footer}>
-            <Heart color={Colors.honey} size={12} fill={Colors.honey} />
+            <Heart color={Colors.honey} size={11} fill={Colors.honey} />
             <Text style={styles.footerText}>Made with love</Text>
           </View>
         </View>
@@ -142,6 +149,7 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: Colors.cream,
   },
   content: {
     flex: 1,
@@ -155,13 +163,13 @@ const styles = StyleSheet.create({
     fontWeight: '700' as const,
     color: Colors.textLight,
     textTransform: 'uppercase' as const,
-    letterSpacing: 1.2,
+    letterSpacing: 1.5,
     marginBottom: 10,
     marginLeft: 4,
   },
   card: {
     backgroundColor: Colors.cardBg,
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: Colors.cardBorder,
     overflow: 'hidden',
@@ -171,7 +179,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 13,
+    paddingVertical: 14,
   },
   rowLeft: {
     flexDirection: 'row',
@@ -179,9 +187,9 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   iconBox: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
+    width: 36,
+    height: 36,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -202,20 +210,28 @@ const styles = StyleSheet.create({
   },
   statsRow: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 12,
   },
   statCard: {
     flex: 1,
     backgroundColor: Colors.cardBg,
-    borderRadius: 16,
-    padding: 18,
+    borderRadius: 18,
+    padding: 20,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: Colors.cardBorder,
-    gap: 5,
+    gap: 6,
+  },
+  statIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(212, 160, 74, 0.06)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   statNumber: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: '700' as const,
     color: Colors.textPrimary,
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
@@ -224,18 +240,18 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: Colors.textMuted,
     textTransform: 'uppercase' as const,
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
   },
   signOutButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    paddingVertical: 15,
-    borderRadius: 16,
-    backgroundColor: 'rgba(196, 75, 75, 0.04)',
+    paddingVertical: 16,
+    borderRadius: 18,
+    backgroundColor: 'rgba(192, 72, 72, 0.04)',
     borderWidth: 1,
-    borderColor: 'rgba(196, 75, 75, 0.08)',
+    borderColor: 'rgba(192, 72, 72, 0.08)',
     marginTop: 6,
   },
   signOutText: {

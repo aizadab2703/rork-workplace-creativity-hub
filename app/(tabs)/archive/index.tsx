@@ -28,7 +28,7 @@ export default function ArchiveScreen() {
     }).start();
   }, [fadeAnim]);
 
-  const renderJarCard = ({ item, index }: { item: Jar; index: number }) => {
+  const renderJarCard = ({ item }: { item: Jar }) => {
     const notesCount = getNotesForJar(item.id).length;
     return (
       <Animated.View
@@ -82,17 +82,19 @@ export default function ArchiveScreen() {
             fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
             fontWeight: '700',
             color: Colors.textPrimary,
+            fontSize: 18,
           },
           headerStyle: {
             backgroundColor: Colors.cream,
           },
+          headerShadowVisible: false,
         }}
       />
-      <View style={[styles.container, { backgroundColor: Colors.cream }]}>
+      <View style={styles.container}>
         {archivedJars.length === 0 ? (
           <View style={styles.emptyState}>
             <View style={styles.emptyIcon}>
-              <Archive color={Colors.textLight} size={32} />
+              <Archive color={Colors.textLight} size={30} />
             </View>
             <Text style={styles.emptyTitle}>No archived jars yet</Text>
             <Text style={styles.emptySubtitle}>
@@ -116,6 +118,7 @@ export default function ArchiveScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: Colors.cream,
   },
   listContent: {
     padding: 20,
@@ -123,24 +126,29 @@ const styles = StyleSheet.create({
   },
   jarCard: {
     backgroundColor: Colors.cardBg,
-    borderRadius: 16,
+    borderRadius: 18,
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderWidth: 1,
     borderColor: Colors.cardBorder,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.02,
+    shadowRadius: 6,
+    elevation: 1,
   },
   cardLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 13,
+    gap: 14,
   },
   jarIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: 'rgba(232, 180, 80, 0.08)',
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    backgroundColor: 'rgba(212, 160, 74, 0.08)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -159,15 +167,16 @@ const styles = StyleSheet.create({
   cardRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
   },
   noteCountBadge: {
     alignItems: 'center',
   },
   notesNumber: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '700' as const,
     color: Colors.honey,
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
   notesLabel: {
     fontSize: 10,
@@ -183,16 +192,16 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   emptyIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: 'rgba(184, 115, 51, 0.05)',
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    backgroundColor: 'rgba(170, 120, 70, 0.04)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   emptyTitle: {
-    fontSize: 19,
+    fontSize: 20,
     fontWeight: '600' as const,
     color: Colors.textPrimary,
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',

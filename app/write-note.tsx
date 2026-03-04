@@ -13,6 +13,8 @@ import {
 } from 'react-native';
 import { router, Stack } from 'expo-router';
 import { X, Send, Feather } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors from '@/constants/colors';
 import { useGratitude } from '@/providers/GratitudeProvider';
 import { triggerHaptic } from '@/utils/helpers';
@@ -21,6 +23,7 @@ const MAX_CHARS = 200;
 
 export default function WriteNoteScreen() {
   const { addNote } = useGratitude();
+  const insets = useSafeAreaInsets();
   const [text, setText] = useState<string>('');
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const paperAnim = useRef(new Animated.Value(0)).current;
@@ -34,12 +37,12 @@ export default function WriteNoteScreen() {
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 400,
+        duration: 450,
         useNativeDriver: true,
       }),
       Animated.timing(inputSlide, {
         toValue: 0,
-        duration: 500,
+        duration: 550,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
@@ -49,13 +52,13 @@ export default function WriteNoteScreen() {
       Animated.sequence([
         Animated.timing(featherRotate, {
           toValue: 1,
-          duration: 3000,
+          duration: 3500,
           easing: Easing.inOut(Easing.sin),
           useNativeDriver: true,
         }),
         Animated.timing(featherRotate, {
           toValue: 0,
-          duration: 3000,
+          duration: 3500,
           easing: Easing.inOut(Easing.sin),
           useNativeDriver: true,
         }),
@@ -105,7 +108,7 @@ export default function WriteNoteScreen() {
 
   const featherAngle = featherRotate.interpolate({
     inputRange: [0, 1],
-    outputRange: ['-4deg', '4deg'],
+    outputRange: ['-5deg', '5deg'],
   });
 
   return (
@@ -116,19 +119,23 @@ export default function WriteNoteScreen() {
           presentation: 'modal',
         }}
       />
-      <View style={[styles.container, { backgroundColor: Colors.cream }]}>
+      <LinearGradient
+        colors={[Colors.cream, Colors.sand]}
+        locations={[0, 1]}
+        style={styles.container}
+      >
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardView}
         >
-          <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+          <Animated.View style={[styles.content, { opacity: fadeAnim, paddingTop: Platform.OS === 'ios' ? insets.top + 12 : 40 }]}>
             <View style={styles.topBar}>
               <TouchableOpacity
                 onPress={() => router.back()}
                 style={styles.closeButton}
                 testID="close-note"
               >
-                <X color={Colors.textSecondary} size={20} />
+                <X color={Colors.textSecondary} size={18} />
               </TouchableOpacity>
               <Animated.View style={{ transform: [{ rotate: featherAngle }] }}>
                 <Feather color={Colors.honey} size={20} />
@@ -194,13 +201,22 @@ export default function WriteNoteScreen() {
                 activeOpacity={0.8}
                 testID="add-to-jar-button"
               >
-                <Send color={Colors.white} size={16} />
-                <Text style={styles.submitText}>Add to jar</Text>
+                <LinearGradient
+                  colors={(!text.trim() || isOverLimit || isSubmitting)
+                    ? [Colors.textLight, Colors.textLight]
+                    : [Colors.terracotta, Colors.terracottaDark]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.submitGradient}
+                >
+                  <Send color={Colors.white} size={16} />
+                  <Text style={styles.submitText}>Add to jar</Text>
+                </LinearGradient>
               </TouchableOpacity>
             </View>
           </Animated.View>
         </KeyboardAvoidingView>
-      </View>
+      </LinearGradient>
     </>
   );
 }
@@ -215,29 +231,30 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
     paddingBottom: 30,
   },
   topBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 28,
+    marginBottom: 24,
   },
   closeButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(184, 115, 51, 0.06)',
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: Colors.cardBg,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: Colors.cardBorder,
   },
   charCounter: {
     alignItems: 'flex-end',
     gap: 4,
   },
   charCount: {
-    fontSize: 14,
+    fontSize: 13,
     color: Colors.textMuted,
     fontWeight: '600' as const,
   },
@@ -246,40 +263,52 @@ const styles = StyleSheet.create({
   },
   charProgressTrack: {
     width: 48,
-    height: 2,
-    backgroundColor: 'rgba(184, 115, 51, 0.08)',
-    borderRadius: 1,
+    height: 3,
+    backgroundColor: 'rgba(170, 120, 70, 0.06)',
+    borderRadius: 1.5,
     overflow: 'hidden',
   },
   charProgressFill: {
     height: '100%',
-    borderRadius: 1,
+    borderRadius: 1.5,
   },
   inputSection: {
     flex: 1,
     justifyContent: 'flex-start',
-    paddingTop: 8,
+    paddingTop: 4,
   },
   inputCard: {
     backgroundColor: Colors.cardBg,
-    borderRadius: 18,
-    padding: 20,
+    borderRadius: 20,
+    padding: 22,
     borderWidth: 1,
     borderColor: Colors.cardBorder,
-    minHeight: 170,
+    minHeight: 180,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 10,
+    elevation: 2,
   },
   input: {
-    fontSize: 19,
+    fontSize: 18,
     color: Colors.textPrimary,
     lineHeight: 28,
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
   bottomSection: {
-    paddingTop: 20,
+    paddingTop: 16,
   },
   submitButton: {
-    borderRadius: 16,
-    backgroundColor: Colors.terracotta,
+    borderRadius: 18,
+    overflow: 'hidden',
+    shadowColor: Colors.terracotta,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  submitGradient: {
     paddingVertical: 17,
     flexDirection: 'row',
     alignItems: 'center',
@@ -287,7 +316,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   submitButtonDisabled: {
-    opacity: 0.4,
+    shadowOpacity: 0,
   },
   submitText: {
     color: Colors.white,

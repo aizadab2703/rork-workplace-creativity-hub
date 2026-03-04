@@ -10,7 +10,9 @@ import {
   ScrollView,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Clock, Calendar, Sparkles, Timer, Zap, Hourglass, Check } from 'lucide-react-native';
+import { Clock, Calendar, Sparkles, Timer, Zap, Hourglass, Check, ArrowLeft } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors from '@/constants/colors';
 import { useGratitude } from '@/providers/GratitudeProvider';
 import { DurationOption } from '@/types';
@@ -35,6 +37,7 @@ const DURATION_OPTIONS: {
 export default function DurationPickerScreen() {
   const { createJar, updateJarDuration, getActiveJar } = useGratitude();
   const { edit } = useLocalSearchParams<{ edit?: string }>();
+  const insets = useSafeAreaInsets();
   const isEditMode = edit === 'true';
   const activeJar = getActiveJar();
 
@@ -63,11 +66,11 @@ export default function DurationPickerScreen() {
     ]).start();
 
     Animated.stagger(
-      70,
+      80,
       cardAnims.map((anim) =>
         Animated.spring(anim, {
           toValue: 1,
-          tension: 55,
+          tension: 50,
           friction: 9,
           useNativeDriver: true,
         })
@@ -79,7 +82,7 @@ export default function DurationPickerScreen() {
     if (selected !== null) {
       Animated.spring(buttonAnim, {
         toValue: 1,
-        tension: 55,
+        tension: 50,
         friction: 9,
         useNativeDriver: true,
       }).start();
@@ -121,7 +124,7 @@ export default function DurationPickerScreen() {
   const testOptions = DURATION_OPTIONS.filter(o => o.section === 'test');
   const standardOptions = DURATION_OPTIONS.filter(o => o.section === 'standard');
 
-  const renderCard = (option: typeof DURATION_OPTIONS[number], index: number, globalIndex: number) => {
+  const renderCard = (option: typeof DURATION_OPTIONS[number], _index: number, globalIndex: number) => {
     const isSelected = selected === option.value;
     const Icon = option.icon;
     return (
@@ -159,7 +162,7 @@ export default function DurationPickerScreen() {
               />
             </View>
             <View style={styles.cardText}>
-              <Text style={styles.cardTitle}>
+              <Text style={[styles.cardTitle, isSelected && styles.cardTitleSelected]}>
                 {option.title}
               </Text>
               <Text style={styles.cardSubtitle}>{option.subtitle}</Text>
@@ -176,13 +179,27 @@ export default function DurationPickerScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: Colors.cream }]}>
+    <LinearGradient
+      colors={[Colors.cream, Colors.sand, Colors.parchment]}
+      locations={[0, 0.5, 1]}
+      style={styles.container}
+    >
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 20 }]}
         showsVerticalScrollIndicator={false}
       >
         <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+          {isEditMode && (
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => router.back()}
+              activeOpacity={0.7}
+            >
+              <ArrowLeft color={Colors.textSecondary} size={20} />
+            </TouchableOpacity>
+          )}
+
           <Animated.View style={[styles.header, { transform: [{ translateY: headerSlide }] }]}>
             <Text style={styles.title}>
               {isEditMode ? 'Change your\ntimeline' : 'How long do you\nwant to wait?'}
@@ -239,14 +256,21 @@ export default function DurationPickerScreen() {
               activeOpacity={0.8}
               testID="start-jar-button"
             >
-              <Text style={styles.confirmText}>
-                {isEditMode ? 'Update timeline' : 'Start my jar'}
-              </Text>
+              <LinearGradient
+                colors={selected ? [Colors.terracotta, Colors.terracottaDark] : [Colors.textLight, Colors.textLight]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.confirmGradient}
+              >
+                <Text style={styles.confirmText}>
+                  {isEditMode ? 'Update timeline' : 'Start my jar'}
+                </Text>
+              </LinearGradient>
             </TouchableOpacity>
           </Animated.View>
         </Animated.View>
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -263,27 +287,38 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: Platform.OS === 'ios' ? 100 : 80,
     paddingBottom: 40,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.cardBg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: Colors.cardBorder,
+    marginBottom: 12,
   },
   header: {
     marginBottom: 28,
   },
   title: {
-    fontSize: 30,
+    fontSize: 32,
     fontWeight: '700' as const,
     color: Colors.textPrimary,
-    lineHeight: 38,
+    lineHeight: 40,
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+    letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 15,
-    color: Colors.textSecondary,
+    color: Colors.textMuted,
     marginTop: 10,
     lineHeight: 22,
   },
   sectionContainer: {
-    marginBottom: 20,
+    marginBottom: 22,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -295,38 +330,38 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.roseSoft,
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 8,
+    borderRadius: 10,
   },
   sectionBadgeText: {
     fontSize: 10,
     fontWeight: '700' as const,
     color: Colors.terracotta,
-    letterSpacing: 1,
+    letterSpacing: 1.2,
   },
   sectionBadgeStandard: {
-    backgroundColor: 'rgba(232, 180, 80, 0.08)',
+    backgroundColor: 'rgba(212, 160, 74, 0.08)',
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 8,
+    borderRadius: 10,
   },
   sectionBadgeTextStandard: {
     fontSize: 10,
     fontWeight: '700' as const,
     color: Colors.honeyDark,
-    letterSpacing: 1,
+    letterSpacing: 1.2,
   },
   sectionLine: {
     flex: 1,
     height: 1,
-    backgroundColor: 'rgba(184, 115, 51, 0.06)',
+    backgroundColor: 'rgba(170, 120, 70, 0.06)',
   },
   cards: {
     gap: 8,
   },
   card: {
     backgroundColor: Colors.cardBg,
-    borderRadius: 16,
-    padding: 15,
+    borderRadius: 18,
+    padding: 16,
     borderWidth: 1,
     borderColor: Colors.cardBorder,
     flexDirection: 'row',
@@ -334,20 +369,25 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   cardSelected: {
-    borderColor: Colors.honey,
-    backgroundColor: 'rgba(255, 250, 243, 0.98)',
+    borderColor: 'rgba(212, 160, 74, 0.3)',
+    backgroundColor: 'rgba(255, 252, 248, 0.98)',
+    shadowColor: Colors.honey,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
   },
   cardContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 13,
+    gap: 14,
     flex: 1,
   },
   iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: 'rgba(184, 115, 51, 0.06)',
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    backgroundColor: 'rgba(170, 120, 70, 0.05)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -360,35 +400,46 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     marginBottom: 2,
   },
+  cardTitleSelected: {
+    color: Colors.textPrimary,
+  },
   cardSubtitle: {
     fontSize: 13,
     color: Colors.textMuted,
     lineHeight: 18,
   },
   selectedCheck: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   buttonContainer: {
-    marginTop: 22,
+    marginTop: 10,
     paddingBottom: 20,
   },
   confirmButton: {
-    borderRadius: 16,
-    backgroundColor: Colors.terracotta,
-    paddingVertical: 17,
+    borderRadius: 18,
+    overflow: 'hidden',
+    shadowColor: Colors.terracotta,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 14,
+    elevation: 6,
+  },
+  confirmGradient: {
+    paddingVertical: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
   confirmButtonDisabled: {
-    opacity: 0.35,
+    shadowOpacity: 0,
   },
   confirmText: {
     color: Colors.white,
     fontSize: 17,
     fontWeight: '600' as const,
+    letterSpacing: 0.2,
   },
 });

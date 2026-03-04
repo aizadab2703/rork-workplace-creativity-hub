@@ -1,59 +1,70 @@
 export default {
-  terracotta: '#B87333',
-  terracottaLight: '#D4956E',
-  terracottaDark: '#8B5A2B',
+  // Primary warmth
+  terracotta: '#C4714A',
+  terracottaLight: '#D98B68',
+  terracottaDark: '#8B4F30',
 
-  honey: '#E8B450',
-  honeyLight: '#F0D68A',
-  honeyDark: '#C9943A',
-  gold: '#D4A24E',
-  goldLight: '#FFD980',
-  goldDark: '#9B7220',
+  // Golden tones
+  honey: '#D4A04A',
+  honeyLight: '#E8C87A',
+  honeyDark: '#B08530',
+  gold: '#C99A3A',
+  goldLight: '#F0D080',
+  goldDark: '#8E6A20',
 
-  sand: '#F7F0E6',
-  sandLight: '#FBF7F2',
-  sandDark: '#EDE4D6',
-  cream: '#FFFAF3',
-  linen: '#FBF4EB',
-  parchment: '#F5EBDB',
+  // Backgrounds — layered warmth
+  sand: '#F5EDE2',
+  sandLight: '#FAF6F0',
+  sandDark: '#E8DDD0',
+  cream: '#FBF7F0',
+  linen: '#F7F0E6',
+  parchment: '#F0E6D6',
 
-  espresso: '#3D2B1F',
-  walnut: '#5C3D2E',
-  sienna: '#7A4E3A',
-  cinnamon: '#8B5E3C',
+  // Rich darks
+  espresso: '#2A1F16',
+  walnut: '#4A352A',
+  sienna: '#6B4838',
+  cinnamon: '#7A563E',
 
-  roseGold: '#C4907A',
-  roseSoft: 'rgba(184, 115, 51, 0.08)',
+  // Accent
+  roseGold: '#C08A74',
+  roseSoft: 'rgba(196, 113, 74, 0.07)',
 
+  // Neutrals
   white: '#FFFFFF',
-  offWhite: '#FEFCF9',
-  textPrimary: '#2C1810',
-  textSecondary: '#5C3D2E',
-  textMuted: '#967259',
-  textLight: '#B89A85',
+  offWhite: '#FDFAF5',
+  textPrimary: '#1E150E',
+  textSecondary: '#4A352A',
+  textMuted: '#8A6E5A',
+  textLight: '#B09880',
 
-  cardBg: 'rgba(255, 250, 243, 0.95)',
-  cardBorder: 'rgba(184, 115, 51, 0.08)',
-  glassBg: 'rgba(255, 250, 243, 0.7)',
-  glassStroke: 'rgba(232, 180, 80, 0.12)',
+  // Cards
+  cardBg: 'rgba(255, 252, 248, 0.92)',
+  cardBorder: 'rgba(170, 120, 70, 0.08)',
+  glassBg: 'rgba(255, 252, 248, 0.65)',
+  glassStroke: 'rgba(212, 160, 74, 0.12)',
 
-  jarGlass: 'rgba(255, 248, 235, 0.4)',
-  jarGlow: 'rgba(232, 180, 80, 0.2)',
-  jarFill: '#E8B450',
-  jarFillDark: '#D4A24E',
-  jarLiquid: '#E8B450',
-  jarLiquidDeep: '#C9943A',
+  // Jar
+  jarGlass: 'rgba(255, 250, 238, 0.35)',
+  jarGlow: 'rgba(212, 160, 74, 0.18)',
+  jarFill: '#D4A04A',
+  jarFillDark: '#C08A30',
+  jarLiquid: '#D4A04A',
+  jarLiquidDeep: '#B08530',
 
-  danger: '#C44B4B',
-  success: '#5A9E6F',
+  // Status
+  danger: '#C04848',
+  success: '#5A9A68',
 
-  gradientWarmStart: '#FFFAF3',
-  gradientWarmMid: '#F7F0E6',
-  gradientWarmEnd: '#EDE4D6',
-  gradientSunrise: '#F9E8D0',
-  gradientSunset: '#E8C8A8',
+  // Gradients
+  gradientWarmStart: '#FBF7F0',
+  gradientWarmMid: '#F5EDE2',
+  gradientWarmEnd: '#E8DDD0',
+  gradientSunrise: '#F5E2C8',
+  gradientSunset: '#E0BEA0',
 
-  accent: '#B87333',
-  accentLight: 'rgba(184, 115, 51, 0.08)',
-  accentGlow: 'rgba(232, 180, 80, 0.2)',
+  // Accent aliases
+  accent: '#C4714A',
+  accentLight: 'rgba(196, 113, 74, 0.07)',
+  accentGlow: 'rgba(212, 160, 74, 0.18)',
 };

@@ -11,6 +11,7 @@ import {
 import { router } from 'expo-router';
 import { Plus, Lock, Pencil, Sparkles } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import Colors from '@/constants/colors';
 import { useGratitude } from '@/providers/GratitudeProvider';
 import { getCountdownText, isJarUnlockable, triggerHaptic } from '@/utils/helpers';
@@ -41,53 +42,63 @@ export default function HomeScreen() {
   const lockedFade = useRef(new Animated.Value(0)).current;
   const progressAnim = useRef(new Animated.Value(0)).current;
   const greetFade = useRef(new Animated.Value(0)).current;
-  const greetSlide = useRef(new Animated.Value(15)).current;
-  const jarEntrance = useRef(new Animated.Value(0.9)).current;
+  const greetSlide = useRef(new Animated.Value(18)).current;
+  const jarEntrance = useRef(new Animated.Value(0.85)).current;
   const jarFadeIn = useRef(new Animated.Value(0)).current;
   const fabEntrance = useRef(new Animated.Value(0)).current;
   const readyPulse = useRef(new Animated.Value(1)).current;
+  const statsFade = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.parallel([
       Animated.timing(greetFade, {
         toValue: 1,
-        duration: 600,
+        duration: 700,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
       Animated.timing(greetSlide, {
         toValue: 0,
-        duration: 600,
+        duration: 700,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
       Animated.sequence([
-        Animated.delay(150),
+        Animated.delay(200),
         Animated.parallel([
           Animated.spring(jarEntrance, {
             toValue: 1,
-            tension: 45,
+            tension: 40,
             friction: 8,
             useNativeDriver: true,
           }),
           Animated.timing(jarFadeIn, {
             toValue: 1,
-            duration: 500,
+            duration: 600,
             useNativeDriver: true,
           }),
         ]),
       ]),
       Animated.sequence([
-        Animated.delay(400),
+        Animated.delay(350),
+        Animated.timing(statsFade, {
+          toValue: 1,
+          duration: 500,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ]),
+      Animated.sequence([
+        Animated.delay(500),
         Animated.spring(fabEntrance, {
           toValue: 1,
-          tension: 60,
+          tension: 55,
           friction: 8,
           useNativeDriver: true,
         }),
       ]),
     ]).start();
-  }, [greetFade, greetSlide, jarEntrance, jarFadeIn, fabEntrance]);
+  }, [greetFade, greetSlide, jarEntrance, jarFadeIn, fabEntrance, statsFade]);
 
   useEffect(() => {
     if (!activeJar) return;
@@ -105,7 +116,7 @@ export default function HomeScreen() {
       const progress = getProgressPercent(activeJar.startDate, activeJar.unlockDate);
       Animated.timing(progressAnim, {
         toValue: progress,
-        duration: 1000,
+        duration: 1200,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: false,
       }).start();
@@ -117,14 +128,14 @@ export default function HomeScreen() {
       Animated.loop(
         Animated.sequence([
           Animated.timing(pulseAnim, {
-            toValue: 1.03,
-            duration: 1500,
+            toValue: 1.04,
+            duration: 1800,
             easing: Easing.inOut(Easing.sin),
             useNativeDriver: true,
           }),
           Animated.timing(pulseAnim, {
             toValue: 0.97,
-            duration: 1500,
+            duration: 1800,
             easing: Easing.inOut(Easing.sin),
             useNativeDriver: true,
           }),
@@ -135,13 +146,13 @@ export default function HomeScreen() {
         Animated.sequence([
           Animated.timing(readyPulse, {
             toValue: 1.02,
-            duration: 1200,
+            duration: 1400,
             easing: Easing.inOut(Easing.sin),
             useNativeDriver: true,
           }),
           Animated.timing(readyPulse, {
             toValue: 1,
-            duration: 1200,
+            duration: 1400,
             easing: Easing.inOut(Easing.sin),
             useNativeDriver: true,
           }),
@@ -199,21 +210,38 @@ export default function HomeScreen() {
 
   if (!activeJar) {
     return (
-      <View style={[styles.container, { backgroundColor: Colors.cream }]}>
+      <LinearGradient
+        colors={[Colors.cream, Colors.sand, Colors.parchment]}
+        locations={[0, 0.6, 1]}
+        style={styles.container}
+      >
         <AmbientParticles />
-        <View style={[styles.emptyContainer, { paddingTop: insets.top + 20 }]}>
-          <JarVisualization fillPercent={0} size={170} />
-          <Text style={styles.emptyTitle}>No active jar</Text>
-          <Text style={styles.emptySubtitle}>Start a new jar to begin your gratitude journey</Text>
+        <View style={[styles.emptyContainer, { paddingTop: insets.top + 40 }]}>
+          <View style={styles.emptyJarArea}>
+            <JarVisualization fillPercent={0} size={180} />
+          </View>
+          <Text style={styles.emptyTitle}>Your gratitude jar</Text>
+          <Text style={styles.emptySubtitle}>
+            Start collecting moments of gratitude.{'\n'}Open them when the time comes.
+          </Text>
           <TouchableOpacity
             style={styles.startButton}
             onPress={() => router.push('/duration-picker')}
             activeOpacity={0.8}
+            testID="start-jar-button"
           >
-            <Text style={styles.startText}>Start a new jar</Text>
+            <LinearGradient
+              colors={[Colors.terracotta, Colors.terracottaDark]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.startButtonGradient}
+            >
+              <Sparkles color={Colors.white} size={18} />
+              <Text style={styles.startText}>Start a new jar</Text>
+            </LinearGradient>
           </TouchableOpacity>
         </View>
-      </View>
+      </LinearGradient>
     );
   }
 
@@ -223,10 +251,14 @@ export default function HomeScreen() {
   });
 
   return (
-    <View style={[styles.container, { backgroundColor: Colors.cream }]}>
+    <LinearGradient
+      colors={[Colors.cream, Colors.sand, Colors.parchment]}
+      locations={[0, 0.5, 1]}
+      style={styles.container}
+    >
       <AmbientParticles />
 
-      <View style={[styles.mainContent, { paddingTop: insets.top + 16 }]}>
+      <View style={[styles.mainContent, { paddingTop: insets.top + 12 }]}>
         <Animated.View
           style={[
             styles.greetingSection,
@@ -254,8 +286,8 @@ export default function HomeScreen() {
               activeOpacity={0.7}
               testID="edit-timeline"
             >
-              <Pencil color={Colors.terracotta} size={12} />
-              <Text style={styles.editTimelineText}>Edit timeline</Text>
+              <Pencil color={Colors.terracotta} size={11} />
+              <Text style={styles.editTimelineText}>Edit</Text>
             </TouchableOpacity>
           </View>
         </Animated.View>
@@ -278,26 +310,28 @@ export default function HomeScreen() {
               },
             ]}
           >
-            <JarVisualization fillPercent={fillPercent} size={240} />
+            <JarVisualization fillPercent={fillPercent} size={220} />
           </Animated.View>
         </TouchableOpacity>
 
         {showLockedMessage && (
           <Animated.View style={[styles.lockedMessage, { opacity: lockedFade }]}>
-            <Lock color={Colors.textMuted} size={13} />
-            <Text style={styles.lockedText}>Not yet, keep going.</Text>
+            <Lock color={Colors.textMuted} size={12} />
+            <Text style={styles.lockedText}>Not yet — keep going!</Text>
           </Animated.View>
         )}
 
-        <View style={styles.countdownSection}>
+        <Animated.View style={[styles.countdownSection, { opacity: statsFade }]}>
           {isUnlockable ? (
             <Animated.View style={[styles.readyBadge, { transform: [{ scale: readyPulse }] }]}>
-              <Sparkles color={Colors.honey} size={20} />
+              <View style={styles.readyIconRing}>
+                <Sparkles color={Colors.honey} size={22} />
+              </View>
               <Text style={styles.readyText}>Ready to open!</Text>
               <Text style={styles.readySubtext}>Tap the jar to reveal your notes</Text>
             </Animated.View>
           ) : (
-            <>
+            <View style={styles.timerCard}>
               <Text style={styles.countdownLabel}>OPENS IN</Text>
               <Text style={styles.countdownText}>{countdown.replace('Opens in ', '')}</Text>
               <View style={styles.progressBar}>
@@ -308,9 +342,9 @@ export default function HomeScreen() {
                   ]}
                 />
               </View>
-            </>
+            </View>
           )}
-        </View>
+        </Animated.View>
       </View>
 
       {!isUnlockable && (
@@ -329,13 +363,18 @@ export default function HomeScreen() {
             activeOpacity={0.85}
             testID="add-note-fab"
           >
-            <View style={styles.fab}>
+            <LinearGradient
+              colors={[Colors.terracotta, Colors.terracottaDark]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.fab}
+            >
               <Plus color={Colors.white} size={26} strokeWidth={2.5} />
-            </View>
+            </LinearGradient>
           </TouchableOpacity>
         </Animated.View>
       )}
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -365,31 +404,32 @@ const styles = StyleSheet.create({
   },
   greetingSection: {
     alignSelf: 'flex-start',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   greeting: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: '700' as const,
     color: Colors.textPrimary,
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-    letterSpacing: -0.3,
+    letterSpacing: -0.4,
   },
   greetingMeta: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 10,
-    gap: 10,
+    gap: 8,
   },
   notesBadge: {
-    backgroundColor: 'rgba(232, 180, 80, 0.1)',
+    backgroundColor: 'rgba(212, 160, 74, 0.1)',
     paddingHorizontal: 12,
     paddingVertical: 5,
-    borderRadius: 10,
+    borderRadius: 20,
   },
   notesBadgeText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600' as const,
     color: Colors.honeyDark,
+    letterSpacing: 0.2,
   },
   editTimelineButton: {
     flexDirection: 'row',
@@ -398,7 +438,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.roseSoft,
     paddingHorizontal: 10,
     paddingVertical: 5,
-    borderRadius: 10,
+    borderRadius: 20,
   },
   editTimelineText: {
     fontSize: 12,
@@ -406,7 +446,7 @@ const styles = StyleSheet.create({
     color: Colors.terracotta,
   },
   jarTouchable: {
-    marginTop: 12,
+    marginTop: 16,
   },
   jarWrapper: {
     alignItems: 'center',
@@ -415,42 +455,53 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginTop: 12,
+    marginTop: 14,
     backgroundColor: Colors.cardBg,
     paddingHorizontal: 18,
     paddingVertical: 10,
-    borderRadius: 20,
+    borderRadius: 24,
     borderWidth: 1,
     borderColor: Colors.cardBorder,
   },
   lockedText: {
-    fontSize: 14,
+    fontSize: 13,
     color: Colors.textMuted,
     fontStyle: 'italic' as const,
   },
   countdownSection: {
-    marginTop: 24,
+    marginTop: 20,
     alignItems: 'center',
     width: '100%',
   },
+  timerCard: {
+    alignItems: 'center',
+    backgroundColor: Colors.cardBg,
+    paddingHorizontal: 32,
+    paddingVertical: 20,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: Colors.cardBorder,
+    width: '100%',
+  },
   countdownLabel: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700' as const,
     color: Colors.textLight,
-    letterSpacing: 2,
+    letterSpacing: 2.5,
     marginBottom: 6,
   },
   countdownText: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '700' as const,
     color: Colors.textPrimary,
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-    marginBottom: 18,
+    marginBottom: 16,
+    letterSpacing: -0.5,
   },
   progressBar: {
-    width: '70%',
+    width: '100%',
     height: 4,
-    backgroundColor: 'rgba(184, 115, 51, 0.08)',
+    backgroundColor: 'rgba(170, 120, 70, 0.06)',
     borderRadius: 2,
     overflow: 'hidden',
   },
@@ -461,16 +512,26 @@ const styles = StyleSheet.create({
   },
   readyBadge: {
     alignItems: 'center',
-    backgroundColor: 'rgba(232, 180, 80, 0.08)',
-    paddingHorizontal: 28,
-    paddingVertical: 18,
-    borderRadius: 20,
+    backgroundColor: 'rgba(212, 160, 74, 0.06)',
+    paddingHorizontal: 32,
+    paddingVertical: 24,
+    borderRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(232, 180, 80, 0.2)',
-    gap: 6,
+    borderColor: 'rgba(212, 160, 74, 0.15)',
+    gap: 8,
+    width: '100%',
+  },
+  readyIconRing: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(212, 160, 74, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
   },
   readyText: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '700' as const,
     color: Colors.honeyDark,
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
@@ -484,33 +545,46 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 32,
-    gap: 14,
+  },
+  emptyJarArea: {
+    marginBottom: 28,
   },
   emptyTitle: {
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: '700' as const,
     color: Colors.textPrimary,
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-    marginTop: 16,
+    marginBottom: 10,
   },
   emptySubtitle: {
     fontSize: 15,
     color: Colors.textMuted,
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 23,
+    marginBottom: 32,
   },
   startButton: {
-    backgroundColor: Colors.terracotta,
-    borderRadius: 16,
-    marginTop: 16,
     width: '100%',
-    paddingVertical: 17,
+    borderRadius: 18,
+    overflow: 'hidden',
+    shadowColor: Colors.terracotta,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 6,
+  },
+  startButtonGradient: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 18,
+    gap: 10,
   },
   startText: {
     color: Colors.white,
     fontSize: 17,
     fontWeight: '600' as const,
+    letterSpacing: 0.2,
   },
   fabContainer: {
     position: 'absolute',
@@ -518,11 +592,15 @@ const styles = StyleSheet.create({
     zIndex: 100,
   },
   fab: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: Colors.terracotta,
+    shadowColor: Colors.terracotta,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
+    elevation: 8,
   },
 });
