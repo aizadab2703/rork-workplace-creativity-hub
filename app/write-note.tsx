@@ -11,10 +11,9 @@ import {
   Platform,
   Keyboard,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, Stack } from 'expo-router';
 import { X, Send, Feather } from 'lucide-react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors from '@/constants/colors';
 import { useGratitude } from '@/providers/GratitudeProvider';
 import { triggerHaptic } from '@/utils/helpers';
@@ -23,7 +22,6 @@ const MAX_CHARS = 200;
 
 export default function WriteNoteScreen() {
   const { addNote } = useGratitude();
-  const insets = useSafeAreaInsets();
   const [text, setText] = useState<string>('');
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const paperAnim = useRef(new Animated.Value(0)).current;
@@ -31,18 +29,18 @@ export default function WriteNoteScreen() {
   const paperScale = useRef(new Animated.Value(1)).current;
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const featherRotate = useRef(new Animated.Value(0)).current;
-  const inputSlide = useRef(new Animated.Value(20)).current;
+  const inputSlide = useRef(new Animated.Value(30)).current;
 
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 450,
+        duration: 500,
         useNativeDriver: true,
       }),
       Animated.timing(inputSlide, {
         toValue: 0,
-        duration: 550,
+        duration: 600,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
@@ -52,13 +50,13 @@ export default function WriteNoteScreen() {
       Animated.sequence([
         Animated.timing(featherRotate, {
           toValue: 1,
-          duration: 3500,
+          duration: 3000,
           easing: Easing.inOut(Easing.sin),
           useNativeDriver: true,
         }),
         Animated.timing(featherRotate, {
           toValue: 0,
-          duration: 3500,
+          duration: 3000,
           easing: Easing.inOut(Easing.sin),
           useNativeDriver: true,
         }),
@@ -78,19 +76,19 @@ export default function WriteNoteScreen() {
       Animated.parallel([
         Animated.timing(paperY, {
           toValue: -350,
-          duration: 700,
+          duration: 800,
           easing: Easing.in(Easing.cubic),
           useNativeDriver: true,
         }),
         Animated.timing(paperScale, {
           toValue: 0.2,
-          duration: 700,
+          duration: 800,
           easing: Easing.in(Easing.cubic),
           useNativeDriver: true,
         }),
         Animated.timing(paperAnim, {
           toValue: 1,
-          duration: 700,
+          duration: 800,
           useNativeDriver: true,
         }),
       ]),
@@ -120,25 +118,25 @@ export default function WriteNoteScreen() {
         }}
       />
       <LinearGradient
-        colors={[Colors.cream, Colors.sand]}
-        locations={[0, 1]}
+        colors={[Colors.cream, Colors.sand, Colors.linen]}
+        locations={[0, 0.5, 1]}
         style={styles.container}
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardView}
         >
-          <Animated.View style={[styles.content, { opacity: fadeAnim, paddingTop: Platform.OS === 'ios' ? insets.top + 12 : 40 }]}>
+          <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
             <View style={styles.topBar}>
               <TouchableOpacity
                 onPress={() => router.back()}
                 style={styles.closeButton}
                 testID="close-note"
               >
-                <X color={Colors.textSecondary} size={18} />
+                <X color={Colors.textSecondary} size={22} />
               </TouchableOpacity>
               <Animated.View style={{ transform: [{ rotate: featherAngle }] }}>
-                <Feather color={Colors.honey} size={20} />
+                <Feather color={Colors.terracottaLight} size={22} />
               </Animated.View>
               <View style={styles.charCounter}>
                 <Text style={[styles.charCount, isOverLimit && styles.charCountOver]}>
@@ -150,7 +148,7 @@ export default function WriteNoteScreen() {
                       styles.charProgressFill,
                       {
                         width: `${Math.min(progress * 100, 100)}%`,
-                        backgroundColor: progress > 0.9 ? Colors.danger : Colors.honey,
+                        backgroundColor: progress > 0.9 ? Colors.danger : Colors.terracotta,
                       },
                     ]}
                   />
@@ -202,14 +200,16 @@ export default function WriteNoteScreen() {
                 testID="add-to-jar-button"
               >
                 <LinearGradient
-                  colors={(!text.trim() || isOverLimit || isSubmitting)
-                    ? [Colors.textLight, Colors.textLight]
-                    : [Colors.terracotta, Colors.terracottaDark]}
+                  colors={
+                    text.trim() && !isOverLimit
+                      ? [Colors.terracotta, Colors.terracottaDark]
+                      : ['#C4B8AE', '#A89B90']
+                  }
+                  style={styles.submitGradient}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
-                  style={styles.submitGradient}
                 >
-                  <Send color={Colors.white} size={16} />
+                  <Send color={Colors.white} size={17} />
                   <Text style={styles.submitText}>Add to jar</Text>
                 </LinearGradient>
               </TouchableOpacity>
@@ -231,30 +231,29 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 24,
+    paddingTop: Platform.OS === 'ios' ? 60 : 40,
     paddingBottom: 30,
   },
   topBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 30,
   },
   closeButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: Colors.cardBg,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: Colors.roseSoft,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: Colors.cardBorder,
   },
   charCounter: {
     alignItems: 'flex-end',
     gap: 4,
   },
   charCount: {
-    fontSize: 13,
+    fontSize: 14,
     color: Colors.textMuted,
     fontWeight: '600' as const,
   },
@@ -262,9 +261,9 @@ const styles = StyleSheet.create({
     color: Colors.danger,
   },
   charProgressTrack: {
-    width: 48,
+    width: 50,
     height: 3,
-    backgroundColor: 'rgba(170, 120, 70, 0.06)',
+    backgroundColor: 'rgba(194, 120, 92, 0.12)',
     borderRadius: 1.5,
     overflow: 'hidden',
   },
@@ -275,52 +274,48 @@ const styles = StyleSheet.create({
   inputSection: {
     flex: 1,
     justifyContent: 'flex-start',
-    paddingTop: 4,
+    paddingTop: 10,
   },
   inputCard: {
     backgroundColor: Colors.cardBg,
     borderRadius: 20,
-    padding: 22,
+    padding: 20,
     borderWidth: 1,
     borderColor: Colors.cardBorder,
     minHeight: 180,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 10,
-    elevation: 2,
   },
   input: {
-    fontSize: 18,
+    fontSize: 20,
     color: Colors.textPrimary,
-    lineHeight: 28,
+    lineHeight: 30,
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
   bottomSection: {
-    paddingTop: 16,
+    paddingTop: 20,
   },
   submitButton: {
-    borderRadius: 18,
+    borderRadius: 20,
     overflow: 'hidden',
-    shadowColor: Colors.terracotta,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 4,
+    shadowColor: Colors.terracottaDark,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  submitButtonDisabled: {
+    opacity: 0.5,
+    shadowOpacity: 0,
   },
   submitGradient: {
-    paddingVertical: 17,
+    paddingVertical: 18,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-  },
-  submitButtonDisabled: {
-    shadowOpacity: 0,
+    gap: 10,
   },
   submitText: {
     color: Colors.white,
     fontSize: 17,
-    fontWeight: '600' as const,
+    fontWeight: '700' as const,
   },
 });

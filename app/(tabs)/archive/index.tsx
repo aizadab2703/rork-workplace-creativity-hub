@@ -8,6 +8,7 @@ import {
   Animated,
   Platform,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, router } from 'expo-router';
 import { Archive, BookOpen, ChevronRight } from 'lucide-react-native';
 import Colors from '@/constants/colors';
@@ -23,12 +24,12 @@ export default function ArchiveScreen() {
   useEffect(() => {
     Animated.timing(fadeAnim, {
       toValue: 1,
-      duration: 400,
+      duration: 500,
       useNativeDriver: true,
     }).start();
   }, [fadeAnim]);
 
-  const renderJarCard = ({ item }: { item: Jar }) => {
+  const renderJarCard = ({ item, index }: { item: Jar; index: number }) => {
     const notesCount = getNotesForJar(item.id).length;
     return (
       <Animated.View
@@ -38,7 +39,7 @@ export default function ArchiveScreen() {
             {
               translateY: fadeAnim.interpolate({
                 inputRange: [0, 1],
-                outputRange: [15, 0],
+                outputRange: [20, 0],
               }),
             },
           ],
@@ -52,7 +53,7 @@ export default function ArchiveScreen() {
         >
           <View style={styles.cardLeft}>
             <View style={styles.jarIcon}>
-              <BookOpen color={Colors.honey} size={17} />
+              <BookOpen color={Colors.terracotta} size={18} />
             </View>
             <View style={styles.cardInfo}>
               <Text style={styles.cardMonth}>{getJarMonthYear(item.startDate)}</Text>
@@ -66,7 +67,7 @@ export default function ArchiveScreen() {
                 {notesCount === 1 ? 'note' : 'notes'}
               </Text>
             </View>
-            <ChevronRight color={Colors.textLight} size={16} />
+            <ChevronRight color={Colors.textLight} size={18} />
           </View>
         </TouchableOpacity>
       </Animated.View>
@@ -82,19 +83,20 @@ export default function ArchiveScreen() {
             fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
             fontWeight: '700',
             color: Colors.textPrimary,
-            fontSize: 18,
           },
           headerStyle: {
             backgroundColor: Colors.cream,
           },
-          headerShadowVisible: false,
         }}
       />
-      <View style={styles.container}>
+      <LinearGradient
+        colors={[Colors.cream, Colors.sand]}
+        style={styles.container}
+      >
         {archivedJars.length === 0 ? (
           <View style={styles.emptyState}>
             <View style={styles.emptyIcon}>
-              <Archive color={Colors.textLight} size={30} />
+              <Archive color={Colors.textLight} size={36} />
             </View>
             <Text style={styles.emptyTitle}>No archived jars yet</Text>
             <Text style={styles.emptySubtitle}>
@@ -110,7 +112,7 @@ export default function ArchiveScreen() {
             showsVerticalScrollIndicator={false}
           />
         )}
-      </View>
+      </LinearGradient>
     </>
   );
 }
@@ -118,26 +120,25 @@ export default function ArchiveScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.cream,
   },
   listContent: {
     padding: 20,
-    gap: 10,
+    gap: 12,
   },
   jarCard: {
     backgroundColor: Colors.cardBg,
     borderRadius: 18,
-    padding: 16,
+    padding: 18,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderWidth: 1,
     borderColor: Colors.cardBorder,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.02,
-    shadowRadius: 6,
-    elevation: 1,
+    shadowColor: Colors.walnut,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
   },
   cardLeft: {
     flexDirection: 'row',
@@ -145,10 +146,10 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   jarIcon: {
-    width: 42,
-    height: 42,
+    width: 44,
+    height: 44,
     borderRadius: 14,
-    backgroundColor: 'rgba(212, 160, 74, 0.08)',
+    backgroundColor: Colors.roseSoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -156,7 +157,7 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   cardMonth: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600' as const,
     color: Colors.textPrimary,
   },
@@ -167,7 +168,7 @@ const styles = StyleSheet.create({
   cardRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
   },
   noteCountBadge: {
     alignItems: 'center',
@@ -175,8 +176,7 @@ const styles = StyleSheet.create({
   notesNumber: {
     fontSize: 22,
     fontWeight: '700' as const,
-    color: Colors.honey,
-    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+    color: Colors.terracotta,
   },
   notesLabel: {
     fontSize: 10,
@@ -189,16 +189,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 40,
-    gap: 10,
+    gap: 12,
   },
   emptyIcon: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
-    backgroundColor: 'rgba(170, 120, 70, 0.04)',
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: 'rgba(194, 120, 92, 0.06)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   emptyTitle: {
     fontSize: 20,
@@ -208,9 +208,9 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   emptySubtitle: {
-    fontSize: 14,
+    fontSize: 15,
     color: Colors.textMuted,
     textAlign: 'center',
-    lineHeight: 21,
+    lineHeight: 22,
   },
 });

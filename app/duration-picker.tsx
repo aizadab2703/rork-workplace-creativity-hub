@@ -9,10 +9,9 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
-import { Clock, Calendar, Sparkles, Timer, Zap, Hourglass, Check, ArrowLeft } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { router, useLocalSearchParams } from 'expo-router';
+import { Clock, Calendar, Sparkles, Timer, Zap, Hourglass, Check } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useGratitude } from '@/providers/GratitudeProvider';
 import { DurationOption } from '@/types';
@@ -37,7 +36,6 @@ const DURATION_OPTIONS: {
 export default function DurationPickerScreen() {
   const { createJar, updateJarDuration, getActiveJar } = useGratitude();
   const { edit } = useLocalSearchParams<{ edit?: string }>();
-  const insets = useSafeAreaInsets();
   const isEditMode = edit === 'true';
   const activeJar = getActiveJar();
 
@@ -48,18 +46,18 @@ export default function DurationPickerScreen() {
   const cardAnims = useRef(DURATION_OPTIONS.map(() => new Animated.Value(0))).current;
   const buttonAnim = useRef(new Animated.Value(0)).current;
   const selectedScale = useRef(new Animated.Value(1)).current;
-  const headerSlide = useRef(new Animated.Value(20)).current;
+  const headerSlide = useRef(new Animated.Value(30)).current;
 
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 500,
+        duration: 600,
         useNativeDriver: true,
       }),
       Animated.timing(headerSlide, {
         toValue: 0,
-        duration: 600,
+        duration: 700,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
@@ -71,7 +69,7 @@ export default function DurationPickerScreen() {
         Animated.spring(anim, {
           toValue: 1,
           tension: 50,
-          friction: 9,
+          friction: 8,
           useNativeDriver: true,
         })
       )
@@ -83,7 +81,7 @@ export default function DurationPickerScreen() {
       Animated.spring(buttonAnim, {
         toValue: 1,
         tension: 50,
-        friction: 9,
+        friction: 8,
         useNativeDriver: true,
       }).start();
     }
@@ -94,8 +92,8 @@ export default function DurationPickerScreen() {
     setSelected(value);
     Animated.sequence([
       Animated.timing(selectedScale, {
-        toValue: 0.97,
-        duration: 70,
+        toValue: 0.96,
+        duration: 80,
         useNativeDriver: true,
       }),
       Animated.spring(selectedScale, {
@@ -124,7 +122,7 @@ export default function DurationPickerScreen() {
   const testOptions = DURATION_OPTIONS.filter(o => o.section === 'test');
   const standardOptions = DURATION_OPTIONS.filter(o => o.section === 'standard');
 
-  const renderCard = (option: typeof DURATION_OPTIONS[number], _index: number, globalIndex: number) => {
+  const renderCard = (option: typeof DURATION_OPTIONS[number], index: number, globalIndex: number) => {
     const isSelected = selected === option.value;
     const Icon = option.icon;
     return (
@@ -136,7 +134,7 @@ export default function DurationPickerScreen() {
             {
               translateY: (cardAnims[globalIndex] ?? new Animated.Value(0)).interpolate({
                 inputRange: [0, 1],
-                outputRange: [20, 0],
+                outputRange: [30, 0],
               }),
             },
             ...(isSelected ? [{ scale: selectedScale }] : []),
@@ -158,11 +156,16 @@ export default function DurationPickerScreen() {
             >
               <Icon
                 color={isSelected ? Colors.white : option.accent}
-                size={18}
+                size={20}
               />
             </View>
             <View style={styles.cardText}>
-              <Text style={[styles.cardTitle, isSelected && styles.cardTitleSelected]}>
+              <Text
+                style={[
+                  styles.cardTitle,
+                  isSelected && { color: Colors.textPrimary },
+                ]}
+              >
                 {option.title}
               </Text>
               <Text style={styles.cardSubtitle}>{option.subtitle}</Text>
@@ -170,7 +173,7 @@ export default function DurationPickerScreen() {
           </View>
           {isSelected && (
             <View style={[styles.selectedCheck, { backgroundColor: option.accent }]}>
-              <Check color={Colors.white} size={13} strokeWidth={3} />
+              <Check color={Colors.white} size={14} strokeWidth={3} />
             </View>
           )}
         </TouchableOpacity>
@@ -186,20 +189,10 @@ export default function DurationPickerScreen() {
     >
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 20 }]}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-          {isEditMode && (
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={() => router.back()}
-              activeOpacity={0.7}
-            >
-              <ArrowLeft color={Colors.textSecondary} size={20} />
-            </TouchableOpacity>
-          )}
-
           <Animated.View style={[styles.header, { transform: [{ translateY: headerSlide }] }]}>
             <Text style={styles.title}>
               {isEditMode ? 'Change your\ntimeline' : 'How long do you\nwant to wait?'}
@@ -242,7 +235,7 @@ export default function DurationPickerScreen() {
                   {
                     translateY: buttonAnim.interpolate({
                       inputRange: [0, 1],
-                      outputRange: [15, 0],
+                      outputRange: [20, 0],
                     }),
                   },
                 ],
@@ -257,10 +250,10 @@ export default function DurationPickerScreen() {
               testID="start-jar-button"
             >
               <LinearGradient
-                colors={selected ? [Colors.terracotta, Colors.terracottaDark] : [Colors.textLight, Colors.textLight]}
+                colors={[Colors.terracotta, Colors.terracottaDark]}
+                style={styles.confirmGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-                style={styles.confirmGradient}
               >
                 <Text style={styles.confirmText}>
                   {isEditMode ? 'Update timeline' : 'Start my jar'}
@@ -287,18 +280,8 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 24,
+    paddingTop: Platform.OS === 'ios' ? 100 : 80,
     paddingBottom: 40,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: Colors.cardBg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: Colors.cardBorder,
-    marginBottom: 12,
   },
   header: {
     marginBottom: 28,
@@ -309,11 +292,10 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     lineHeight: 40,
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 15,
-    color: Colors.textMuted,
+    fontSize: 16,
+    color: Colors.textSecondary,
     marginTop: 10,
     lineHeight: 22,
   },
@@ -330,52 +312,52 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.roseSoft,
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 10,
+    borderRadius: 8,
   },
   sectionBadgeText: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700' as const,
     color: Colors.terracotta,
-    letterSpacing: 1.2,
+    letterSpacing: 1,
   },
   sectionBadgeStandard: {
-    backgroundColor: 'rgba(212, 160, 74, 0.08)',
+    backgroundColor: 'rgba(212, 162, 78, 0.12)',
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 10,
+    borderRadius: 8,
   },
   sectionBadgeTextStandard: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700' as const,
     color: Colors.honeyDark,
-    letterSpacing: 1.2,
+    letterSpacing: 1,
   },
   sectionLine: {
     flex: 1,
     height: 1,
-    backgroundColor: 'rgba(170, 120, 70, 0.06)',
+    backgroundColor: 'rgba(194, 120, 92, 0.1)',
   },
   cards: {
-    gap: 8,
+    gap: 10,
   },
   card: {
     backgroundColor: Colors.cardBg,
     borderRadius: 18,
     padding: 16,
-    borderWidth: 1,
-    borderColor: Colors.cardBorder,
+    borderWidth: 1.5,
+    borderColor: 'rgba(194, 120, 92, 0.08)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
   cardSelected: {
-    borderColor: 'rgba(212, 160, 74, 0.3)',
-    backgroundColor: 'rgba(255, 252, 248, 0.98)',
-    shadowColor: Colors.honey,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 2,
+    borderColor: Colors.terracotta,
+    backgroundColor: 'rgba(253, 248, 243, 0.98)',
+    shadowColor: Colors.terracotta,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 5,
   },
   cardContent: {
     flexDirection: 'row',
@@ -384,10 +366,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   iconContainer: {
-    width: 42,
-    height: 42,
+    width: 44,
+    height: 44,
     borderRadius: 14,
-    backgroundColor: 'rgba(170, 120, 70, 0.05)',
+    backgroundColor: 'rgba(194, 120, 92, 0.08)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -395,13 +377,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cardTitle: {
-    fontSize: 16,
-    fontWeight: '600' as const,
+    fontSize: 17,
+    fontWeight: '700' as const,
     color: Colors.textPrimary,
     marginBottom: 2,
-  },
-  cardTitleSelected: {
-    color: Colors.textPrimary,
   },
   cardSubtitle: {
     fontSize: 13,
@@ -416,30 +395,30 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   buttonContainer: {
-    marginTop: 10,
+    marginTop: 24,
     paddingBottom: 20,
   },
   confirmButton: {
-    borderRadius: 18,
+    borderRadius: 20,
     overflow: 'hidden',
-    shadowColor: Colors.terracotta,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.2,
-    shadowRadius: 14,
-    elevation: 6,
+    shadowColor: Colors.terracottaDark,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  confirmButtonDisabled: {
+    opacity: 0.4,
   },
   confirmGradient: {
     paddingVertical: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  confirmButtonDisabled: {
-    shadowOpacity: 0,
-  },
   confirmText: {
     color: Colors.white,
-    fontSize: 17,
-    fontWeight: '600' as const,
-    letterSpacing: 0.2,
+    fontSize: 18,
+    fontWeight: '700' as const,
+    letterSpacing: 0.3,
   },
 });

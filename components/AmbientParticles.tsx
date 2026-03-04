@@ -1,13 +1,14 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { View, StyleSheet, Animated, Easing, Dimensions } from 'react-native';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-const PARTICLE_COUNT = 8;
+const PARTICLE_COUNT = 12;
 
 interface FloatingDot {
   x: Animated.Value;
   y: Animated.Value;
   opacity: Animated.Value;
+  scale: Animated.Value;
   color: string;
   size: number;
 }
@@ -18,13 +19,15 @@ export default React.memo(function AmbientParticles() {
       x: new Animated.Value(Math.random() * SCREEN_WIDTH),
       y: new Animated.Value(Math.random() * SCREEN_HEIGHT),
       opacity: new Animated.Value(0),
+      scale: new Animated.Value(0.3 + Math.random() * 0.7),
       color: [
-        'rgba(232, 180, 80, 0.12)',
-        'rgba(212, 162, 78, 0.10)',
-        'rgba(255, 217, 128, 0.10)',
-        'rgba(201, 148, 58, 0.08)',
-      ][Math.floor(Math.random() * 4)],
-      size: 4 + Math.random() * 6,
+        'rgba(212, 162, 78, 0.25)',
+        'rgba(194, 120, 92, 0.2)',
+        'rgba(196, 144, 122, 0.18)',
+        'rgba(232, 196, 118, 0.22)',
+        'rgba(201, 148, 58, 0.2)',
+      ][Math.floor(Math.random() * 5)],
+      size: 4 + Math.random() * 8,
     }))
   ).current;
 
@@ -36,20 +39,20 @@ export default React.memo(function AmbientParticles() {
       dot.y.setValue(startY);
 
       const animateFloat = () => {
-        const targetX = startX + (Math.random() - 0.5) * 60;
-        const targetY = startY + (Math.random() - 0.5) * 80;
-        const duration = 5000 + Math.random() * 4000;
+        const targetX = startX + (Math.random() - 0.5) * 80;
+        const targetY = startY + (Math.random() - 0.5) * 100;
+        const duration = 4000 + Math.random() * 4000;
 
         Animated.parallel([
           Animated.sequence([
             Animated.timing(dot.opacity, {
-              toValue: 0.5 + Math.random() * 0.3,
+              toValue: 0.6 + Math.random() * 0.4,
               duration: duration * 0.3,
               easing: Easing.inOut(Easing.sin),
               useNativeDriver: true,
             }),
             Animated.timing(dot.opacity, {
-              toValue: 0,
+              toValue: 0.1,
               duration: duration * 0.7,
               easing: Easing.inOut(Easing.sin),
               useNativeDriver: true,
@@ -74,7 +77,7 @@ export default React.memo(function AmbientParticles() {
         });
       };
 
-      setTimeout(() => animateFloat(), i * 600);
+      setTimeout(() => animateFloat(), i * 500);
     });
   }, [dots]);
 
@@ -94,6 +97,7 @@ export default React.memo(function AmbientParticles() {
               transform: [
                 { translateX: dot.x },
                 { translateY: dot.y },
+                { scale: dot.scale },
               ],
             },
           ]}
