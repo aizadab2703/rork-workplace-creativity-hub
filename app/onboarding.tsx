@@ -143,11 +143,7 @@ export default function OnboardingScreen() {
           setError(result.error);
           return;
         }
-        Alert.alert(
-          'Check your email',
-          'We sent you a confirmation link. Please verify your email then sign in.',
-          [{ text: 'OK', onPress: () => showForm('signin') }]
-        );
+        router.replace('/');
       } else {
         console.log('[Onboarding] Signing in with email:', email);
         const result = await signIn(email.trim(), password);
