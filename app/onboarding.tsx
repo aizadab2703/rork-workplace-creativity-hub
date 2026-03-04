@@ -106,12 +106,17 @@ export default function OnboardingScreen() {
 
     try {
       if (mode === 'sign_up') {
-        await signUp({ email: email.trim(), password });
-        Alert.alert(
-          'Check your email',
-          'We sent you a confirmation link. Please verify your email, then sign in.',
-          [{ text: 'OK', onPress: () => setMode('sign_in') }]
-        );
+        const result = await signUp({ email: email.trim(), password });
+        if (result.session) {
+          console.log('[Onboarding] Signed up & auto-confirmed, navigating...');
+          router.replace('/');
+        } else {
+          Alert.alert(
+            'Check your email',
+            'We sent you a confirmation link. Please verify your email, then sign in.',
+            [{ text: 'OK', onPress: () => setMode('sign_in') }]
+          );
+        }
       } else {
         await signIn({ email: email.trim(), password });
         console.log('[Onboarding] Signed in successfully');
@@ -120,7 +125,11 @@ export default function OnboardingScreen() {
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Something went wrong';
       console.error('[Onboarding] Auth error:', message);
-      Alert.alert('Error', message);
+      if (message === 'Invalid login credentials' && mode === 'sign_in') {
+        Alert.alert('Sign In Failed', 'Invalid email or password. If you are new, tap "Sign Up" to create an account.');
+      } else {
+        Alert.alert('Error', message);
+      }
     }
   };
 
