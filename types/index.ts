@@ -2,7 +2,7 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  provider: 'apple' | 'google';
+  provider: 'email';
   createdAt: string;
 }
 
