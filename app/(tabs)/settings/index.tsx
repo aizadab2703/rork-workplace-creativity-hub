@@ -76,9 +76,7 @@ export default function SettingsScreen() {
                   </View>
                   <View>
                     <Text style={styles.rowLabel}>Signed in with</Text>
-                    <Text style={styles.rowSubtext}>
-                      {user?.provider === 'apple' ? 'Apple' : 'Google'}
-                    </Text>
+                    <Text style={styles.rowSubtext}>Email</Text>
                   </View>
                 </View>
               </View>

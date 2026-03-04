@@ -2,66 +2,69 @@ import { useEffect, useState, useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import createContextHook from '@nkzw/create-context-hook';
-import { User, Jar, Note, DurationOption } from '@/types';
+import { Jar, Note, DurationOption } from '@/types';
 import { generateId } from '@/utils/helpers';
+import { useAuth } from '@/providers/AuthProvider';
 
 const STORAGE_KEYS = {
-  USER: 'gratitude_user',
   JARS: 'gratitude_jars',
   NOTES: 'gratitude_notes',
 };
 
 export const [GratitudeProvider, useGratitude] = createContextHook(() => {
   const queryClient = useQueryClient();
-  const [user, setUser] = useState<User | null>(null);
+  const { user: authUser, isAuthenticated, signOut: authSignOut } = useAuth();
+
   const [jars, setJars] = useState<Jar[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
   const [isReady, setIsReady] = useState<boolean>(false);
 
+  const userId = authUser?.id ?? null;
+  const userEmail = authUser?.email ?? '';
+  const userName = authUser?.user_metadata?.name ?? userEmail.split('@')[0] ?? 'User';
+
   const dataQuery = useQuery({
-    queryKey: ['gratitude-data'],
+    queryKey: ['gratitude-data', userId],
     queryFn: async () => {
       console.log('[GratitudeProvider] Loading data from storage...');
-      const [userData, jarsData, notesData] = await Promise.all([
-        AsyncStorage.getItem(STORAGE_KEYS.USER),
+      const [jarsData, notesData] = await Promise.all([
         AsyncStorage.getItem(STORAGE_KEYS.JARS),
         AsyncStorage.getItem(STORAGE_KEYS.NOTES),
       ]);
-      return {
-        user: userData ? JSON.parse(userData) as User : null,
-        jars: jarsData ? JSON.parse(jarsData) as Jar[] : [],
-        notes: notesData ? JSON.parse(notesData) as Note[] : [],
-      };
+      const allJars = jarsData ? JSON.parse(jarsData) as Jar[] : [];
+      const allNotes = notesData ? JSON.parse(notesData) as Note[] : [];
+      const userJars = userId ? allJars.filter(j => j.userId === userId) : [];
+      const userNotes = userId ? allNotes.filter(n => n.userId === userId) : [];
+      return { jars: userJars, notes: userNotes };
     },
+    enabled: !!userId,
   });
 
   useEffect(() => {
     if (dataQuery.data) {
-      setUser(dataQuery.data.user);
       setJars(dataQuery.data.jars);
       setNotes(dataQuery.data.notes);
       setIsReady(true);
       console.log('[GratitudeProvider] Data loaded:', {
-        hasUser: !!dataQuery.data.user,
         jarsCount: dataQuery.data.jars.length,
         notesCount: dataQuery.data.notes.length,
       });
     }
   }, [dataQuery.data]);
 
-  const saveUserMutation = useMutation({
-    mutationFn: async (newUser: User) => {
-      await AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(newUser));
-      return newUser;
-    },
-    onSuccess: (newUser) => {
-      setUser(newUser);
-    },
-  });
+  useEffect(() => {
+    if (!userId) {
+      setIsReady(true);
+    }
+  }, [userId]);
 
-  const saveJarsMutation = useMutation({
+  const { mutate: saveJars } = useMutation({
     mutationFn: async (updatedJars: Jar[]) => {
-      await AsyncStorage.setItem(STORAGE_KEYS.JARS, JSON.stringify(updatedJars));
+      const existing = await AsyncStorage.getItem(STORAGE_KEYS.JARS);
+      const allJars = existing ? JSON.parse(existing) as Jar[] : [];
+      const otherJars = allJars.filter(j => j.userId !== userId);
+      const merged = [...otherJars, ...updatedJars];
+      await AsyncStorage.setItem(STORAGE_KEYS.JARS, JSON.stringify(merged));
       return updatedJars;
     },
     onSuccess: (updatedJars) => {
@@ -69,9 +72,13 @@ export const [GratitudeProvider, useGratitude] = createContextHook(() => {
     },
   });
 
-  const saveNotesMutation = useMutation({
+  const { mutate: saveNotes } = useMutation({
     mutationFn: async (updatedNotes: Note[]) => {
-      await AsyncStorage.setItem(STORAGE_KEYS.NOTES, JSON.stringify(updatedNotes));
+      const existing = await AsyncStorage.getItem(STORAGE_KEYS.NOTES);
+      const allNotes = existing ? JSON.parse(existing) as Note[] : [];
+      const otherNotes = allNotes.filter(n => n.userId !== userId);
+      const merged = [...otherNotes, ...updatedNotes];
+      await AsyncStorage.setItem(STORAGE_KEYS.NOTES, JSON.stringify(merged));
       return updatedNotes;
     },
     onSuccess: (updatedNotes) => {
@@ -79,38 +86,21 @@ export const [GratitudeProvider, useGratitude] = createContextHook(() => {
     },
   });
 
-  const signIn = useCallback((provider: 'apple' | 'google', name: string, email: string) => {
-    const newUser: User = {
-      id: generateId(),
-      email,
-      name,
-      provider,
-      createdAt: new Date().toISOString(),
-    };
-    console.log('[GratitudeProvider] Signing in user:', newUser.email);
-    saveUserMutation.mutate(newUser);
-  }, [saveUserMutation]);
-
   const signOut = useCallback(async () => {
     console.log('[GratitudeProvider] Signing out...');
-    await Promise.all([
-      AsyncStorage.removeItem(STORAGE_KEYS.USER),
-      AsyncStorage.removeItem(STORAGE_KEYS.JARS),
-      AsyncStorage.removeItem(STORAGE_KEYS.NOTES),
-    ]);
-    setUser(null);
+    await authSignOut();
     setJars([]);
     setNotes([]);
     queryClient.invalidateQueries({ queryKey: ['gratitude-data'] });
-  }, [queryClient]);
+  }, [authSignOut, queryClient]);
 
   const createJar = useCallback((durationMinutes: DurationOption) => {
-    if (!user) return null;
+    if (!userId) return null;
     const now = new Date();
     const unlockDate = new Date(now.getTime() + durationMinutes * 60 * 1000);
     const newJar: Jar = {
       id: generateId(),
-      userId: user.id,
+      userId,
       startDate: now.toISOString(),
       unlockDate: unlockDate.toISOString(),
       durationMinutes,
@@ -119,34 +109,34 @@ export const [GratitudeProvider, useGratitude] = createContextHook(() => {
     };
     console.log('[GratitudeProvider] Creating jar:', newJar.id, 'durationMinutes:', durationMinutes);
     const updated = [...jars, newJar];
-    saveJarsMutation.mutate(updated);
+    saveJars(updated);
     return newJar;
-  }, [user, jars, saveJarsMutation]);
+  }, [userId, jars, saveJars]);
 
   const addNote = useCallback((text: string) => {
-    if (!user) return null;
+    if (!userId) return null;
     const activeJar = getActiveJar();
     if (!activeJar) return null;
     const newNote: Note = {
       id: generateId(),
       jarId: activeJar.id,
-      userId: user.id,
+      userId,
       text,
       createdAt: new Date().toISOString(),
     };
     console.log('[GratitudeProvider] Adding note to jar:', activeJar.id);
     const updated = [...notes, newNote];
-    saveNotesMutation.mutate(updated);
+    saveNotes(updated);
     return newNote;
-  }, [user, jars, notes, saveNotesMutation]);
+  }, [userId, jars, notes, saveNotes]);
 
   const unlockJar = useCallback((jarId: string) => {
     console.log('[GratitudeProvider] Unlocking jar:', jarId);
     const updated = jars.map(j =>
       j.id === jarId ? { ...j, isUnlocked: true } : j
     );
-    saveJarsMutation.mutate(updated);
-  }, [jars, saveJarsMutation]);
+    saveJars(updated);
+  }, [jars, saveJars]);
 
   const updateJarDuration = useCallback((jarId: string, newDurationMinutes: DurationOption) => {
     console.log('[GratitudeProvider] Updating jar duration:', jarId, 'to', newDurationMinutes, 'minutes');
@@ -155,8 +145,8 @@ export const [GratitudeProvider, useGratitude] = createContextHook(() => {
       const newUnlockDate = new Date(new Date(j.startDate).getTime() + newDurationMinutes * 60 * 1000);
       return { ...j, durationMinutes: newDurationMinutes, unlockDate: newUnlockDate.toISOString() };
     });
-    saveJarsMutation.mutate(updated);
-  }, [jars, saveJarsMutation]);
+    saveJars(updated);
+  }, [jars, saveJars]);
 
   const getActiveJar = useCallback((): Jar | null => {
     return jars.find(j => !j.isUnlocked) ?? null;
@@ -175,12 +165,18 @@ export const [GratitudeProvider, useGratitude] = createContextHook(() => {
   }, [jars]);
 
   return {
-    user,
+    user: authUser ? {
+      id: userId ?? '',
+      email: userEmail,
+      name: userName,
+      provider: 'email' as const,
+      createdAt: authUser.created_at ?? '',
+    } : null,
     jars,
     notes,
     isReady,
     isLoading: dataQuery.isLoading,
-    signIn,
+    isAuthenticated,
     signOut,
     createJar,
     addNote,

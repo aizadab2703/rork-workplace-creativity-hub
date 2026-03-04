@@ -20,14 +20,14 @@ import AmbientParticles from '@/components/AmbientParticles';
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
-  const { getActiveJar, getNotesForJar, user, isReady } = useGratitude();
+  const { getActiveJar, getNotesForJar, user, isReady, isAuthenticated } = useGratitude();
 
   useEffect(() => {
-    if (isReady && !user) {
-      console.log('[Home] No user found, redirecting to onboarding');
+    if (isReady && !isAuthenticated) {
+      console.log('[Home] No authenticated user, redirecting to onboarding');
       router.replace('/onboarding');
     }
-  }, [isReady, user]);
+  }, [isReady, isAuthenticated]);
 
   const activeJar = getActiveJar();
   const jarNotes = activeJar ? getNotesForJar(activeJar.id) : [];
